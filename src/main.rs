@@ -27,12 +27,6 @@ async fn run() {
         usage: wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
         mapped_at_creation: false,
     });
-    // This works if the buffer is initialized, otherwise reads all 0, for some reason.
-    let query_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-        label: None,
-        contents: &[0; 16],
-        usage: wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
-    });
 
     let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
         label: None,
@@ -87,10 +81,6 @@ async fn run() {
     let buffer_slice = output_buffer.slice(..);
     let (sender, receiver) = futures_intrusive::channel::shared::oneshot_channel();
     buffer_slice.map_async(wgpu::MapMode::Read, move |v| sender.send(v).unwrap());
-    let query_slice = query_buffer.slice(..);
-    // Assume that both buffers become available at the same time. A more careful
-    // approach would be to wait for both notifications to be sent.
-    query_slice.map_async(wgpu::MapMode::Read, |_| ());
     device.poll(wgpu::Maintain::Wait);
     if let Some(Ok(())) = receiver.receive().await {
         let data_raw = &*buffer_slice.get_mapped_range();
