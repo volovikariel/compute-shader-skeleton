@@ -1,0 +1,12 @@
+[package]
+name = "compute-shader-skeleton"
+version = "0.1.0"
+authors = ["Max Pearce Basman", "Ariel ___"]
+edition = "2021"
+
+[dependencies]
+wgpu = "0.14"
+env_logger = "0.9.1"
+pollster = "0.2.5"
+futures-intrusive = "0.4"
+bytemuck = { version = "1.12.1", features = ["derive"] }
