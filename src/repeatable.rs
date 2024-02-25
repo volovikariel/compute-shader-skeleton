@@ -9,7 +9,7 @@ pub struct Runner {
 
 impl Runner {
     /// Defines the variables that don't depend on the specific slice being computed over
-    pub async fn new() -> Self {
+    pub async fn new(shader: &str, entry_point: &str) -> Self {
         let (device, queue) = wgpu::Instance::new(wgpu::Backends::PRIMARY)
             .request_adapter(&Default::default())
             .await
@@ -41,9 +41,9 @@ impl Runner {
             ),
             module: &device.create_shader_module(wgpu::ShaderModuleDescriptor {
                 label: None,
-                source: wgpu::ShaderSource::Wgsl(include_str!("shader.wgsl").into()),
+                source: wgpu::ShaderSource::Wgsl(shader.into()),
             }),
-            entry_point: "main",
+            entry_point,
         });
         Self {
             device,
@@ -54,7 +54,7 @@ impl Runner {
     }
 
     /// defines the input-dependant variables and runs the computation
-    pub async fn run(&self, input: &[f32]) -> Vec<f32> {
+    pub async fn run<T: bytemuck::Pod>(&self, input: &[T]) -> Vec<T> {
         assert!(!input.is_empty(), "Input cannot be empty");
 
         let input_bytes: &[u8] = bytemuck::cast_slice(input);
