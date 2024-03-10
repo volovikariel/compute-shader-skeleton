@@ -102,7 +102,6 @@ impl Runner {
                 label: None,
                 contents: input_bytes,
                 usage: wgpu::BufferUsages::STORAGE
-                    | wgpu::BufferUsages::COPY_DST
                     | wgpu::BufferUsages::COPY_SRC,
             });
         let output_buffer = self.device.create_buffer(&wgpu::BufferDescriptor {
