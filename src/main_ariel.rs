@@ -112,10 +112,10 @@ fn main() {
     let (device, queue) = get_webgpu_device_and_queue().block_on().unwrap();
     let shader_module = create_shader_module(&device, &shader_code);
     // TODO: Should allow for more complicated input data (e.g: 2D array)
-    let input_data: [u32; 16] = {
-        let mut data: [u32; 16] = [0u32; 16];
+    let input_data: [f32; 16] = {
+        let mut data: [f32; 16] = [0f32; 16];
         for i in 0..16 {
-            data[i] = i as u32;
+            data[i] = i as f32;
         }
         data
     };
@@ -191,7 +191,7 @@ fn main() {
         // // Offset 0 specifies it's the first param
         // // The second param would have an offset of input_data.len()
         // compute_pass.set_push_constants(0, &[input_bytes.len() as u8]);
-        compute_pass.dispatch_workgroups(input_data.len() as u32, 1, 1);
+        compute_pass.dispatch_workgroups(input_bytes.len() as u32, 1, 1);
     }
     encoder.copy_buffer_to_buffer(
         &input_buffer,
