@@ -112,13 +112,12 @@ fn main() {
     let (device, queue) = get_webgpu_device_and_queue().block_on().unwrap();
     let shader_module = create_shader_module(&device, &shader_code);
     // TODO: Should allow for more complicated input data (e.g: 2D array)
-    let input_data: [f32; 16] = {
-        let mut data: [f32; 16] = [0f32; 16];
-        for i in 0..16 {
-            data[i] = i as f32;
-        }
-        data
-    };
+    let mut input_data: [i32; 16] = [0; 16];
+
+    // Iterate over the indices of the array and assign values
+    for i in 0..16 {
+        input_data[i] = i as i32;
+    }
     let input_bytes = bytemuck::bytes_of(&input_data);
     // Create "input" buffer (what is to be processed by the shader)
     let input_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
