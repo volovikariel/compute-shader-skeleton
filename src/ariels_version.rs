@@ -18,7 +18,7 @@ pub enum RequestDeviceError {
 
 impl fmt::Display for RequestDeviceError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
+        match self {
             RequestDeviceError::AdapterCreationFailure => write!(f, "Adapter creation failure"),
             RequestDeviceError::DeviceCreationFailure => {
                 write!(f, "Device or queue creation failure")
@@ -27,22 +27,39 @@ impl fmt::Display for RequestDeviceError {
     }
 }
 
+fn get_shader_code() -> String {
+    let shader_code = match env::args().nth(1) {
+        Some(shader_file_path) => {
+            // Read the contents of the shader file
+            match fs::read_to_string(&shader_file_path) {
+                Ok(shader_file_content) => shader_file_content,
+                Err(err) => {
+                    eprintln!("Error reading shader file: {}", err);
+                    std::process::exit(1);
+                }
+            }
+        }
+        None => {
+            eprintln!("Usage: cargo run -- <shader_file_path>");
+            std::process::exit(1);
+        }
+    };
+    shader_code
+}
+
 async fn get_webgpu_device_and_queue() -> Result<(wgpu::Device, wgpu::Queue), RequestDeviceError> {
     // Instantiates instance of WebGPU
     let instance = wgpu::Instance::default();
 
     // `request_adapter` instantiates the general connection to the GPU
-    let adapter = match instance
+    let adapter = instance
         .request_adapter(&wgpu::RequestAdapterOptions::default())
         .await
-    {
-        Some(adapter) => adapter,
-        None => return Err(RequestDeviceError::AdapterCreationFailure),
-    };
+        .ok_or(RequestDeviceError::AdapterCreationFailure)?;
 
     // `request_device` instantiates the feature specific connection to the GPU, defining some parameters,
     //  `features` being the available features.
-    let (device, queue) = match adapter
+    let (device, queue) = adapter
         .request_device(
             &wgpu::DeviceDescriptor {
                 label: Some("WebGPU Device"),
@@ -52,10 +69,7 @@ async fn get_webgpu_device_and_queue() -> Result<(wgpu::Device, wgpu::Queue), Re
             None,
         )
         .await
-    {
-        Ok((device, queue)) => (device, queue),
-        Err(_) => return Err(RequestDeviceError::DeviceCreationFailure),
-    };
+        .map_err(|_| RequestDeviceError::DeviceCreationFailure)?;
 
     Ok((device, queue))
 }
@@ -81,29 +95,7 @@ fn create_shader_pipeline(
 }
 
 fn main() {
-    let result = get_webgpu_device_and_queue().block_on();
-
-    // Retrieve command-line arguments
-    let args: Vec<String> = env::args().collect();
-
-    // Check if a shader file path argument is provided
-    if args.len() < 2 {
-        eprintln!("Usage: cargo run -- <shader_file_path>");
-        return;
-    }
-
-    // Extract the shader file path from the command-line arguments
-    let shader_file_path = &args[1];
-
-    // Read the contents of the shader file
-    let shader_code = match fs::read_to_string(shader_file_path) {
-        Ok(content) => content,
-        Err(err) => {
-            eprintln!("Error reading shader file: {}", err);
-            return;
-        }
-    };
-
-    let (device, queue) = result.unwrap();
+    let shader_code = get_shader_code();
+    let (device, queue) = get_webgpu_device_and_queue().block_on().unwrap();
     let shader_module = create_shader_module(&device, &shader_code);
 }
