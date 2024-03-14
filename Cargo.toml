@@ -12,5 +12,9 @@ futures-intrusive = "0.4"
 bytemuck = { version = "1.12.1", features = ["derive"] }
 
 [[ bin ]]
-name = "ariels_version"
-path = "src/ariels_version.rs"
+name = "max"
+path = "src/main_max.rs"
+
+[[ bin ]]
+name = "ariel"
+path = "src/main_ariel.rs"
