@@ -7,7 +7,7 @@
     4. We specify WHAT binding# each INPUT/OUTPUT corresponds to in shader code (bind group layout)
     5. We specify WHAT group# each binding layout corresponds to (bind group)
     6. We specify EVERYTHING that will be part of the compute shader code, as part of the compute pipeline (the bind group layout + any constants you may want to add)
-    7. We initialize the compute pipeline based on the sahder code + pipeline layout
+    7. We initialize the compute pipeline based on the shader code + pipeline layout
     8. We create a compute pass,
        specify it the pipeline (inputs/output layouts+constants),
        the bind group (the buffer contents of inputs/outputs),
